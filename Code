@@ -1,0 +1,80 @@
+// Motor control pins
+#define IN1 2   // Motor 1 control
+#define IN2 3   // Motor 1 control
+#define IN3 4   // Motor 2 control
+#define IN4 5   // Motor 2 control
+#define ENA 9   // PWM for Motor 1
+#define ENB 10  // PWM for Motor 2
+
+// Ultrasonic sensor pins
+#define TRIG 11
+#define ECHO 12
+
+// Threshold distance in cm
+#define OBSTACLE_DISTANCE 15  
+
+void setup() {
+  // Initialize motor control pins
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+  pinMode(ENA, OUTPUT);
+  pinMode(ENB, OUTPUT);
+  
+  // Initialize ultrasonic sensor pins
+  pinMode(TRIG, OUTPUT);
+  pinMode(ECHO, INPUT);
+  
+  // Set motor speeds (0-255)
+  analogWrite(ENA, 200); // Adjust speed if needed
+  analogWrite(ENB, 200);
+  
+  Serial.begin(9600);
+}
+
+// Function to measure distance using the ultrasonic sensor
+long getDistance() {
+  digitalWrite(TRIG, LOW);
+  delayMicroseconds(2);
+  
+  digitalWrite(TRIG, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG, LOW);
+  
+  long duration = pulseIn(ECHO, HIGH);
+  long distance = duration * 0.034 / 2; // Convert time to distance (cm)
+  
+  return distance;
+}
+
+// Function to move both motors forward (Fixed Direction)
+void moveForward() {
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);  // Swap HIGH to LOW
+  digitalWrite(IN4, HIGH); // Swap LOW to HIGH
+}
+
+// Function to stop both motors
+void stopMotors() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+}
+
+void loop() {
+  long distance = getDistance();
+  Serial.print("Distance: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+  
+  if (distance > OBSTACLE_DISTANCE) {
+    moveForward();
+  } else {
+    stopMotors();
+  }
+  
+  delay(100);
+}
